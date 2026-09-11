@@ -1,0 +1,9 @@
+{
+  "name": "buggin-v1-buggy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mock e-commerce app - V1-BUGGY (same as V0 plus ~16 seeded bugs). See fixtures/BUG_CATALOG.md.",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

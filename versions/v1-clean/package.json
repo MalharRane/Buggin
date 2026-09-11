@@ -1,0 +1,9 @@
+{
+  "name": "buggin-v1-clean",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mock e-commerce app - V1-CLEAN (same as V0 plus ~10 harmless changes, zero real bugs). See fixtures/CHANGE_CATALOG.md.",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

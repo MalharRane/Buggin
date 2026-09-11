@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "name": "Classic Tee",
+    "price": 19.99,
+    "image": "/images/product1.svg",
+    "description": "A soft, everyday cotton t-shirt in classic fit.",
+    "rating": { "value": 4.5, "count": 128 }
+  },
+  {
+    "id": 2,
+    "name": "Trail Sneakers",
+    "price": 59.99,
+    "image": "/images/product2.svg",
+    "description": "Lightweight sneakers built for light trail and city wear.",
+    "rating": { "value": 4.2, "count": 84 }
+  },
+  {
+    "id": 3,
+    "name": "Canvas Backpack",
+    "price": 45.00,
+    "image": "/images/product3.svg",
+    "description": "Durable canvas backpack with a padded laptop sleeve and a redesigned front pocket for everyday essentials.",
+    "rating": { "value": 4.7, "count": 203 }
+  },
+  {
+    "id": 4,
+    "name": "Chrono Watch",
+    "price": 89.99,
+    "image": "/images/product4.svg",
+    "description": "Stainless steel chronograph watch with leather strap.",
+    "rating": { "value": 4.1, "count": 56 }
+  },
+  {
+    "id": 5,
+    "name": "Wireless Headphones",
+    "price": 129.99,
+    "image": "/images/product5.svg",
+    "description": "Over-ear wireless headphones with active noise cancellation.",
+    "rating": { "value": 4.6, "count": 341 }
+  },
+  {
+    "id": 6,
+    "name": "Retro Sunglasses",
+    "price": 24.99,
+    "image": "/images/product6.svg",
+    "description": "UV-protective sunglasses with a retro round frame.",
+    "rating": { "value": 4.0, "count": 42 }
+  }
+]

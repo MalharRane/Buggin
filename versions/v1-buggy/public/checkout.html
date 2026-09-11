@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout - Buggin Shop</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="logo">Buggin Shop</div>
+  <nav class="main-nav">
+    <a href="/index.html">Products</a>
+    <a href="/cart.html">Cart<span class="cart-badge">0</span></a>
+  </nav>
+</header>
+
+<main>
+  <h1>Checkout</h1>
+  <div id="checkout-content">
+    <form id="checkout-form" class="checkout-form">
+      <div class="form-field">
+        <label for="name">Full name</label>
+        <input type="text" id="name" name="name" required>
+      </div>
+      <div class="form-field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+      </div>
+      <div class="form-field">
+        <label for="address">Address</label>
+        <input type="text" id="address" name="address" required>
+      </div>
+      <button type="submit" id="place-order-btn" class="btn btn-primary">Place Order</button>
+      <div id="order-error-container"></div>
+    </form>
+    <div id="order-success" class="order-success hidden">
+      <h2>Thank you!</h2>
+      <p>Your order has been placed successfully.</p>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">Buggin Shop &mdash; a fixture app for regression testing.</footer>
+
+<script src="/js/api.js"></script>
+<script src="/js/cart.js"></script>
+<script src="/js/checkout.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "name": "buggin-v0-baseline",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mock e-commerce app - V0 baseline (known-good reference).",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
