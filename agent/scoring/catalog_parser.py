@@ -153,17 +153,30 @@ def _extract_console_keyword(description_text):
     return fallback
 
 
+def _mentions_feedback_missing(description_text, selector_text, evidence_type_text):
+    """True for a bug whose claim is "expected post-action confirmation
+    text never appears" (BUG-14) - now a first-class finding category
+    (`feedback-missing`, from regression_agent/feedback.py) rather than a
+    sub-claim squeezed into category="dom-missing". Detected the same way
+    as before (the phrase lives in the catalog's prose, not a single
+    keyword), just contributes to accepted_categories now instead of to
+    _extract_dom_missing_claim's claim_type."""
+    combined_lower = f"{description_text} {selector_text} {evidence_type_text}".lower()
+    return "confirmation message" in combined_lower or "feedback message" in combined_lower
+
+
 def _extract_dom_missing_claim(description_text, selector_text, evidence_type_text):
     """(claim_type, keyword_words) for a dom-missing bug. This is the fix
-    for the over-crediting bug: "a control is gone" and "text never
-    appears after an action" are different claims that happen to share
-    category=dom-missing and often the same page - without this, any
+    for the over-crediting bug: "a control is gone" and "a silent action
+    that produces no evidence at all" are different claims that happen to
+    share category=dom-missing and often the same page - without this, any
     finding of either shape credits every bug of either shape on that page.
+    ("text never appears after an action" used to be a third claim_type
+    here too, but that's now the dedicated feedback-missing category above
+    - a real finding shape exists for it, so it no longer needs to borrow
+    dom-missing's category to be representable.)
     """
     combined_lower = f"{description_text} {selector_text} {evidence_type_text}".lower()
-
-    if "confirmation message" in combined_lower or "feedback message" in combined_lower:
-        return "feedback_missing", frozenset()
 
     if "silent action-does-nothing" in combined_lower or "no further evidence at all" in combined_lower:
         return "silent_action", frozenset()
@@ -255,6 +268,8 @@ def parse_bug_catalog(path):
         accepted = {category}
         accepted |= _extract_secondary_categories(evidence_type, category)
         accepted |= SECONDARY_EVIDENCE_OVERRIDES.get(bug_id, set())
+        if _mentions_feedback_missing(description, selector, evidence_type):
+            accepted.add("feedback-missing")
 
         network_resource_hint = (
             _extract_network_resource_hint(combined_text) if category == "network" else None

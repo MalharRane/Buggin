@@ -101,6 +101,24 @@ def _diff_control(baseline_found, candidate_found, page_label, control_name, fin
         ))
 
 
+def _diff_feedback(base_new_text, cand_new_text, page_label, action_name, findings):
+    """Baseline is the ground truth for "does this action produce visible
+    feedback at all" - not the catalog, not hardcoded fixture text. If
+    baseline's click produced newly-visible text near the control and the
+    candidate's click produces none, the confirmation regressed - full
+    stop, regardless of what either version's text actually said. A
+    reworded confirmation (candidate also produces *some* new text, just
+    different words) is explicitly not flagged: only total absence is.
+    """
+    if base_new_text and not cand_new_text:
+        findings.append(_finding(
+            "feedback-missing", page_label,
+            f"After {action_name}, baseline showed new confirmation text "
+            f"({base_new_text!r}) but the candidate shows none at all",
+            {"baseline_feedback_text": base_new_text, "candidate_feedback_text": cand_new_text},
+        ))
+
+
 def _diff_product(key, base_p, cand_p, findings):
     label = f"product:{key}"
     if base_p is None:
@@ -125,6 +143,12 @@ def _diff_product(key, base_p, cand_p, findings):
         base_p["add_to_cart_network"], cand_p["add_to_cart_network"], label + ":add-to-cart", findings,
         check_dropped_to_zero=(base_p["add_to_cart_found"] and cand_p["add_to_cart_found"]),
     )
+
+    if base_p["add_to_cart_found"] and cand_p["add_to_cart_found"]:
+        _diff_feedback(
+            base_p.get("add_to_cart_new_text", []), cand_p.get("add_to_cart_new_text", []),
+            label + ":add-to-cart", "clicking Add to Cart", findings,
+        )
 
 
 def _diff_cart(base_cart, cand_cart, findings):

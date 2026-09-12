@@ -9,6 +9,7 @@ why - so the same code runs unmodified against v0-baseline, v1-buggy, and
 v1-clean, and would run against a real app with the same page shapes.
 """
 from . import config
+from .feedback import visible_text_near
 from .locators import find_clickable, find_form_field, discover_product_cards, card_key
 from .recorder import Recorder
 from .visual_scan import run_visual_scan
@@ -69,6 +70,7 @@ def _capture_product(page, rec, base_url, index):
         "add_to_cart_found": False,
         "add_to_cart_console": [],
         "add_to_cart_network": [],
+        "add_to_cart_new_text": [],
     }
 
     link = find_clickable(card, config.PATTERNS["product_link"])
@@ -88,6 +90,7 @@ def _capture_product(page, rec, base_url, index):
     add_btn = find_clickable(page, config.PATTERNS["add_to_cart"])
     if add_btn is not None:
         profile["add_to_cart_found"] = True
+        before_text = visible_text_near(add_btn)
 
         def _click_add(_page):
             add_btn.click()
@@ -95,6 +98,9 @@ def _capture_product(page, rec, base_url, index):
         console, network = _step(rec, page, _click_add)
         profile["add_to_cart_console"] = console
         profile["add_to_cart_network"] = network
+
+        after_text = visible_text_near(add_btn)
+        profile["add_to_cart_new_text"] = sorted(after_text - before_text)
 
     # Back to the listing for the next card.
     def _go_back(_page):

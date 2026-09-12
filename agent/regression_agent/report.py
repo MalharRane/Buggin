@@ -47,7 +47,7 @@ def write_markdown(findings, run_meta, path):
         by_category = {}
         for f in surfaced:
             by_category.setdefault(f["category"], []).append(f)
-        for category in ("visual", "network", "console", "dom-missing", "structural-divergence"):
+        for category in ("visual", "network", "console", "dom-missing", "feedback-missing", "structural-divergence"):
             items = by_category.get(category, [])
             if not items:
                 continue
