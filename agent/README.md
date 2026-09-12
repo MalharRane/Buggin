@@ -249,6 +249,7 @@ of the scorer fix.
   like `checkout|proceed to payment` are generous but finite; a rename to
   wholly novel vocabulary (e.g. "Finalize") would need a pattern added, or a
   fallback to an LLM-based element-grounding step (not built).
-- **No scoring harness.** This agent produces findings; comparing them
-  field-by-field against `BUG_CATALOG.md`/`CHANGE_CATALOG.md` to compute
-  precision/recall automatically is a natural next step, not built here.
+- **Tested against this fixture only.** The crawl assumes an e-commerce-
+  shaped flow (listing -> detail -> cart -> checkout); a real third-party
+  app is the natural next target, and would likely need the locator
+  vocabulary above extended or generalized.
