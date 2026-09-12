@@ -73,8 +73,8 @@ def main(argv=None):
         if not has_api_credentials():
             print(
                 f"Warning: {ambiguous_count} ambiguous finding(s) need LLM adjudication "
-                "but no Anthropic credentials were found (ANTHROPIC_API_KEY / "
-                "ANTHROPIC_AUTH_TOKEN / ant auth login). They will be marked 'unresolved'.",
+                "but no Groq credentials were found (GROQ_API_KEY). "
+                "They will be marked 'unresolved'.",
                 file=sys.stderr,
             )
         print(f"Adjudicating {ambiguous_count} ambiguous finding(s) ...", file=sys.stderr)

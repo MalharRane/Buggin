@@ -27,7 +27,7 @@ regression_agent/
   locators.py     generic text/role/label-based element discovery
   capture.py      the crawler: walks listing -> each product -> cart -> checkout
   rules.py        deterministic diff: baseline profile vs candidate profile -> Findings
-  adjudicate.py   Claude call for the one ambiguous finding type (see below)
+  adjudicate.py   Groq call for the one ambiguous finding type (see below)
   report.py       renders report.json + report.md
   cli.py          `python -m regression_agent.cli`
 ```
@@ -68,6 +68,18 @@ naturally records a 3-step path there vs. a 2-step path on baseline.
 - **DOM/control reachability** - for each expected control (product link,
   add-to-cart, cart nav, qty +/-, checkout CTA, submit/confirm), whether it
   was found at all.
+- **Post-action feedback (`feedback.py`)** - for add-to-cart, the set of
+  visible text nodes near the clicked button immediately before and after
+  the click. The diff (newly-appeared text) is compared to baseline's diff
+  for the same action: if baseline's click produced new text and the
+  candidate's produces none at all, that's flagged as category
+  `feedback-missing`. Baseline is the only source of truth for "should this
+  produce feedback" - no fixture text is hardcoded, so a legitimate
+  rewording (candidate still shows *some* new text, just different words)
+  is never flagged, only total absence. The snapshot is scoped to the
+  button's parent container rather than the whole page, so an unrelated
+  page-wide update from the same click (e.g. a cart-count badge in the
+  header incrementing) can't mask a missing *local* confirmation.
 
 ### Rules first, LLM only for the genuinely ambiguous case
 
@@ -81,15 +93,22 @@ naturally records a 3-step path there vs. a 2-step path on baseline.
 - any control reachable in baseline that's no longer reachable,
 - checkout going from completing to not completing at all.
 
-Only one case is routed to Claude (`adjudicate.py`, `claude-opus-5`,
-structured output via a Pydantic `AdjudicationResult`): **the checkout path
-still reaches success on both sides, but the path/DOM shape differs.** A
-rule can't tell "a developer added a legitimate extra step" apart from "a
-regression that happens to route around itself and still limp to a 200" -
-that's a judgment call, so it's the only thing that costs a model call. If
-no Anthropic credentials are configured, this is marked `"unresolved"` and
-listed in the report's audit appendix - it is **never** defaulted to
-"regression" (which would produce a false positive) or silently dropped.
+Only one case is routed to an LLM (`adjudicate.py`, Groq's
+`openai/gpt-oss-120b`, structured output via a Pydantic
+`AdjudicationResult` using Groq's `response_format: json_schema`):
+**the checkout path still reaches success on both sides, but the
+path/DOM shape differs.** A rule can't tell "a developer added a
+legitimate extra step" apart from "a regression that happens to route
+around itself and still limp to a 200" - that's a judgment call, so it's
+the only thing that costs a model call. The prompt is handed *only* the
+finding's own evidence (baseline step labels vs. candidate step labels)
+and the one narrow question ("legitimate change or regression?") - it's
+told explicitly not to assume anything beyond that evidence. If no Groq
+credentials are configured, this is marked `"unresolved"` and listed in
+the report's audit appendix - it is **never** defaulted to "regression"
+(which would produce a false positive) or silently dropped. Verified live
+on CHANGE-11: returns `"legitimate_change"` (confidence 0.8) with
+reasoning that correctly stays within the given evidence.
 
 ## Running it
 
@@ -160,25 +179,29 @@ results are suspect.
 
 Writes `out/<target>/report.json` and `report.md`. Add `--save-captures` to
 also dump the raw per-run evidence (`capture_baseline.json`/`capture_target.json`)
-for debugging. Add `--no-adjudicate` to skip the Claude call entirely (any
-ambiguous structural-divergence finding is then left unresolved rather than
-auto-cleared or auto-flagged).
+for debugging. Add `--no-adjudicate` to skip the adjudication call entirely
+(any ambiguous structural-divergence finding is then left unresolved rather
+than auto-cleared or auto-flagged).
 
-LLM adjudication needs Anthropic credentials (`ANTHROPIC_API_KEY`,
-`ANTHROPIC_AUTH_TOKEN`, or `ant auth login`) - see `adjudicate.py`. Without
-them the pipeline still runs and still produces a valid report; only the
-ambiguous bucket goes unresolved.
+LLM adjudication needs a Groq credential (`GROQ_API_KEY`) - see
+`adjudicate.py`. Without it the pipeline still runs and still produces a
+valid report; only the ambiguous bucket goes unresolved.
 
 ## Validated results (this session)
 
 Ran against the live fixture servers:
 
-- **v1-buggy**: 26 findings, directly covering 11 of the 16 catalogued bugs
-  with concrete evidence (BUG-01, 02, 05, 07, 08, 09, 10, 12, 13, 15, 16).
+- **v1-buggy**: 29 findings, directly covering 12 of the 16 catalogued bugs
+  with concrete evidence (BUG-01, 02, 05, 07, 08, 09, 10, 12, 13, 14, 15, 16).
   3 bugs (BUG-04, 06, 11) live on the checkout page, which BUG-13 makes
   completely unreachable from the cart in this build - the agent correctly
   reports "checkout unreachable" rather than fabricating unreachable-page
   findings, which is the behavior a real QA pass would also produce.
+  BUG-14 ("Added to cart!" confirmation never appears) is caught by the
+  post-action feedback check described above - 4 real `feedback-missing`
+  findings, one per reachable product, with zero fixture-specific text
+  hardcoded (see "Known limitations" history below for how this used to be
+  a false hit via a different mechanism, and how it's now a real one).
 - **v1-clean**: **0 findings reported.** The only rule that fired at all was
   the expected structural-divergence on checkout (2 steps -> 3 steps, i.e.
   CHANGE-11); with no API key available in this environment it was correctly
@@ -193,15 +216,19 @@ Ran against the live fixture servers:
   added to cart), not just cosmetically showing a placeholder rating as
   `BUG_CATALOG.md` currently describes. Worth a catalog correction.
 
-The 11/16 (85% of the 13 reachable) figure above is no longer just a
-hand-count - it's mechanically reproduced by `scoring/` (see below), which
-also caught and fixed a real over-crediting bug in its own matcher: an
-early version credited BUG-14 ("confirmation text never appears") from
-findings that were actually about *missing controls* (BUG-13/15/16's
-territory), just because both shapes happen to be `category="dom-missing"`
-on overlapping pages. The fix required matching on the finding's specific
-evidence shape, not just category+page - see `scoring/matcher.py`'s
-`_claim_matches`.
+The 12/16 (92% of the 13 reachable) figure above is mechanically
+reproduced by `scoring/` (see below), not hand-counted. BUG-14 has a small
+history worth keeping: `scoring/`'s matcher first credited it from findings
+that were actually about *missing controls* (BUG-13/15/16's territory),
+just because both shapes happen to be `category="dom-missing"` on
+overlapping pages - a scorer bug, not a real hit (fixed by matching on the
+finding's specific evidence shape, not just category+page; see
+`scoring/matcher.py`'s `_claim_matches`). That fix correctly demoted BUG-14
+to a miss, since at the time nothing in the agent actually checked for
+missing confirmation text. The post-action feedback check above closed
+that real gap afterward, and BUG-14 is now credited by genuine
+`feedback-missing` evidence - a different, legitimate hit, not a reversion
+of the scorer fix.
 
 ## Known limitations (honest, not swept under the rug)
 
@@ -213,10 +240,11 @@ evidence shape, not just category+page - see `scoring/matcher.py`'s
   per-element correspondence between baseline and candidate DOM snapshots
   (comparing the *same* named element's box across runs), which is a
   meaningfully bigger feature than the current page-level anomaly scan.
-- **BUG-14 not caught.** Nothing currently checks "did clicking this produce
-  the visible feedback text baseline showed." Building that generically
-  (diffing visible-text-that-appeared-after-an-action between runs) is a
-  reasonable next feature but wasn't built this session.
+- **Post-action feedback is only checked for add-to-cart.** The mechanism in
+  `feedback.py` is generic (before/after visible-text diff near a clicked
+  control), but it's only wired up for the add-to-cart action right now. A
+  bug in, say, checkout's post-submit feedback wouldn't be caught by it
+  today - extending it to other actions is a small, mechanical addition.
 - **Locator vocabulary is e-commerce-flavored, not fully general.** Patterns
   like `checkout|proceed to payment` are generous but finite; a rename to
   wholly novel vocabulary (e.g. "Finalize") would need a pattern added, or a

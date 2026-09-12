@@ -4,29 +4,37 @@ reaches a successful terminal state on both baseline and candidate. A rule
 can't tell "a developer added a legitimate extra step" (not a regression)
 apart from "something broke and the flow now limps through an unintended
 detour to a technically-successful end state" (a regression) - that call
-needs judgment, so it's the only thing sent to Claude.
+needs judgment, so it's the only thing sent to an LLM.
 
 Every other finding in rules.py is already unambiguous (a new console
 error, a request that regressed from 2xx to non-2xx, a new visual anomaly,
 a control that's no longer reachable, a flow that no longer completes at
-all) and is never routed through here.
+all, or missing post-action feedback text) and is never routed through
+here.
+
+Uses Groq (not Anthropic) - see MODEL below, pinned from a live query
+against https://api.groq.com/openai/v1/models.
 """
 import json
 import os
 
 from pydantic import BaseModel
 
-MODEL = "claude-opus-5"
+MODEL = "openai/gpt-oss-120b"  # Groq-hosted; supports response_format json_schema (structured_outputs)
 
-SYSTEM_PROMPT = """You are adjudicating findings for a web-app regression-testing agent.
+SYSTEM_PROMPT = """You are adjudicating one finding for a web-app regression-testing agent.
 
 You will be given ONE finding where a checkout-style flow's path/DOM
 structure differs between a known-good baseline run and a candidate run of
-a (possibly changed) version of the same app - but BOTH runs reached a
-successful terminal state (the flow completed). Deterministic checks have
-already confirmed there is no new console error, no new failed network
-request, and no new visual anomaly anywhere along either path - this
-finding is ONLY about the path/structure differing.
+a (possibly changed) version of the same app. This finding type is only
+ever raised when BOTH runs reached a successful terminal state (the flow
+completed on both sides) - that is guaranteed by how the finding was
+generated, not something you need to verify. Deterministic checks upstream
+have already separately confirmed there is no new console error, no new
+failed network request, and no new visual anomaly anywhere along either
+path - this finding is ONLY about the path/structure differing. Do not
+assume, infer, or invent any fact beyond the evidence JSON you are given;
+if the evidence doesn't say it, it isn't true.
 
 Decide:
 - "legitimate_change": the extra/different step(s) look like a real,
@@ -48,36 +56,61 @@ class AdjudicationResult(BaseModel):
     reasoning: str
 
 
+_RESPONSE_FORMAT = {
+    "type": "json_schema",
+    "json_schema": {
+        "name": "adjudication_result",
+        "schema": {
+            "type": "object",
+            "properties": {
+                "verdict": {"type": "string", "enum": ["legitimate_change", "regression"]},
+                "confidence": {"type": "number"},
+                "reasoning": {"type": "string"},
+            },
+            "required": ["verdict", "confidence", "reasoning"],
+            "additionalProperties": False,
+        },
+        "strict": True,
+    },
+}
+
+
 def _client():
-    import anthropic
-    return anthropic.Anthropic()
+    import groq
+    return groq.Groq()  # reads GROQ_API_KEY from the environment
 
 
 def adjudicate(findings):
     """Mutates and returns `findings`: every finding with
     confidence == "ambiguous" gets a verdict/reasoning filled in (or an
     "unresolved" verdict if the LLM call itself fails, e.g. no credentials
-    configured - this must never crash the whole report)."""
+    configured - this must never crash the whole report, and must never
+    default to "regression" just because the call failed)."""
     for finding in findings:
         if finding["confidence"] != "ambiguous":
             continue
 
         prompt = (
             f"Finding: {finding['description']}\n\n"
-            f"Evidence (JSON):\n{json.dumps(finding['evidence'], indent=2)}\n\n"
-            "Classify this finding."
+            "Evidence (JSON) - this is the ONLY evidence available for this "
+            "finding; do not assume or invent anything beyond it:\n"
+            f"{json.dumps(finding['evidence'], indent=2)}\n\n"
+            "Does the changed checkout flow shown above still accomplish its "
+            "goal (a legitimate change), or is it a regression? Classify this finding."
         )
 
         try:
             client = _client()
-            response = client.messages.parse(
+            completion = client.chat.completions.create(
                 model=MODEL,
-                max_tokens=1024,
-                system=SYSTEM_PROMPT,
-                messages=[{"role": "user", "content": prompt}],
-                output_format=AdjudicationResult,
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": prompt},
+                ],
+                response_format=_RESPONSE_FORMAT,
             )
-            result = response.parsed_output
+            raw = completion.choices[0].message.content
+            result = AdjudicationResult.model_validate_json(raw)
             finding["verdict"] = result.verdict
             finding["reasoning"] = result.reasoning
             finding["llm_confidence"] = result.confidence
@@ -93,8 +126,4 @@ def adjudicate(findings):
 
 
 def has_api_credentials():
-    return bool(
-        os.environ.get("ANTHROPIC_API_KEY")
-        or os.environ.get("ANTHROPIC_AUTH_TOKEN")
-        or os.environ.get("ANTHROPIC_PROFILE")
-    )
+    return bool(os.environ.get("GROQ_API_KEY"))
