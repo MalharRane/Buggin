@@ -112,7 +112,17 @@ it would miss roughly a third of the seeded bugs. Full detail, per-bug
 selectors, and exact evidence type are in
 [`fixtures/BUG_CATALOG.md`](fixtures/BUG_CATALOG.md).
 
-## What's intentionally NOT here (yet)
+## Phase 0 vs. Phase 1
 
-No Playwright, no test runner, no agent/LangGraph code, no vision model
-calls, no database. Phase 0 is the fixture and its answer key only.
+This README originally described Phase 0 only: no Playwright, no test
+runner, no agent code, no vision model calls, no database - just the
+fixture and its answer key.
+
+**Phase 1 now exists** in [`agent/`](agent/): a Playwright Python
+regression-testing agent that crawls the fixture generically (no knowledge
+of the bug/change catalogs), captures console/network/DOM/visual-geometry
+evidence, diffs it against a baseline run, and uses an LLM only to
+adjudicate the one genuinely ambiguous finding type - a checkout flow whose
+path changed but still succeeds (the CHANGE-11 case). See
+[`agent/README.md`](agent/README.md) for architecture, how to run it, and
+an honest list of what it does and doesn't catch yet.
