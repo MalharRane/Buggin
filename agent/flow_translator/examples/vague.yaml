@@ -1,0 +1,3 @@
+flow: "Test the checkout"
+steps:
+  - action: "test the checkout"

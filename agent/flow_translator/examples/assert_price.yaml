@@ -1,0 +1,8 @@
+flow: "Cart total matches the item price"
+steps:
+  - action: "go to the product listing page"
+  - action: "open the product named 'Trail Sneakers'"
+  - action: "click add to cart"
+  - action: "go to the cart"
+  - action: "check that the cart total matches the item's price"
+    expect: "the total shown is $59.99"
