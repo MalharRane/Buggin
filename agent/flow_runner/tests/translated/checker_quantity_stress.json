@@ -1,0 +1,145 @@
+{
+  "flow_name": "Expectation checker stress test - spurious quantity match",
+  "steps": [
+    {
+      "step_index": 0,
+      "original_action": "go to the product listing page",
+      "original_expect": "",
+      "operations": [
+        {
+          "op": "navigate",
+          "target_page": "listing",
+          "locator_by": "",
+          "locator_value": "",
+          "locator_role": "",
+          "field_label": "",
+          "value": ""
+        }
+      ],
+      "expect_type": "none",
+      "expect_detail": "",
+      "needs_clarification": false,
+      "clarification_reason": ""
+    },
+    {
+      "step_index": 1,
+      "original_action": "open the product named 'Classic Tee'",
+      "original_expect": "",
+      "operations": [
+        {
+          "op": "click",
+          "target_page": "",
+          "locator_by": "text",
+          "locator_value": "Classic Tee",
+          "locator_role": "link",
+          "field_label": "",
+          "value": ""
+        }
+      ],
+      "expect_type": "none",
+      "expect_detail": "",
+      "needs_clarification": false,
+      "clarification_reason": ""
+    },
+    {
+      "step_index": 2,
+      "original_action": "click add to cart",
+      "original_expect": "",
+      "operations": [
+        {
+          "op": "click",
+          "target_page": "",
+          "locator_by": "text",
+          "locator_value": "Add to Cart",
+          "locator_role": "button",
+          "field_label": "",
+          "value": ""
+        }
+      ],
+      "expect_type": "none",
+      "expect_detail": "",
+      "needs_clarification": false,
+      "clarification_reason": ""
+    },
+    {
+      "step_index": 3,
+      "original_action": "go to the product listing page",
+      "original_expect": "",
+      "operations": [
+        {
+          "op": "navigate",
+          "target_page": "listing",
+          "locator_by": "",
+          "locator_value": "",
+          "locator_role": "",
+          "field_label": "",
+          "value": ""
+        }
+      ],
+      "expect_type": "none",
+      "expect_detail": "",
+      "needs_clarification": false,
+      "clarification_reason": ""
+    },
+    {
+      "step_index": 4,
+      "original_action": "open the product named 'Trail Sneakers'",
+      "original_expect": "",
+      "operations": [
+        {
+          "op": "click",
+          "target_page": "",
+          "locator_by": "text",
+          "locator_value": "Trail Sneakers",
+          "locator_role": "link",
+          "field_label": "",
+          "value": ""
+        }
+      ],
+      "expect_type": "none",
+      "expect_detail": "",
+      "needs_clarification": false,
+      "clarification_reason": ""
+    },
+    {
+      "step_index": 5,
+      "original_action": "click add to cart",
+      "original_expect": "",
+      "operations": [
+        {
+          "op": "click",
+          "target_page": "",
+          "locator_by": "text",
+          "locator_value": "Add to Cart",
+          "locator_role": "button",
+          "field_label": "",
+          "value": ""
+        }
+      ],
+      "expect_type": "none",
+      "expect_detail": "",
+      "needs_clarification": false,
+      "clarification_reason": ""
+    },
+    {
+      "step_index": 6,
+      "original_action": "go to the cart",
+      "original_expect": "the cart shows 1 item",
+      "operations": [
+        {
+          "op": "navigate",
+          "target_page": "cart",
+          "locator_by": "",
+          "locator_value": "",
+          "locator_role": "",
+          "field_label": "",
+          "value": ""
+        }
+      ],
+      "expect_type": "text_appears",
+      "expect_detail": "1 item",
+      "needs_clarification": false,
+      "clarification_reason": ""
+    }
+  ]
+}

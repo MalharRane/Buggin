@@ -1,0 +1,11 @@
+flow: "Checkout with a valid order"
+steps:
+  - action: "go to the product listing page"
+  - action: "open the product named 'Classic Tee'"
+  - action: "click add to cart"
+    expect: "a confirmation message appears"
+  - action: "go to the cart"
+    expect: "the cart shows 1 item"
+  - action: "proceed to checkout"
+  - action: "fill name, email, address, then place the order"
+    expect: "an order success confirmation is shown"

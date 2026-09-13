@@ -60,6 +60,30 @@ after evidence, no fixture knowledge — to an LLM (Groq's
 The LLM never discovers bugs on its own; it only rules on a case the
 deterministic rules already isolated.
 
+## Two ways to define "correct"
+
+Buggin supports two ways to define what "correct" means for the app under
+test, both feeding the same grounded evidence engine that only ever flags
+with mechanical proof. **Regression mode** (above) defines it as *matches
+a known-good baseline run* — no spec, no catalog, just a diff against
+working behavior. **Spec mode** (`agent/flow_translator/` +
+`agent/flow_runner/`, newer) defines it as *whatever a user states
+explicitly*: you write a light-structured, plain-language flow — a named
+list of steps, each an action plus an optional expected outcome — an LLM
+translates it into a concrete step plan (navigate/click/fill/assert,
+targets described generically by text/role/label, never executed at
+translation time), and `flow_runner` executes that plan through the same
+network/console/DOM/visible-text evidence capture regression mode uses,
+checking each stated expectation against what was actually observed. A
+step that succeeds produces nothing; only a genuine failure or an unmet
+expectation is reported, and it always cites the same kind of mechanical
+evidence — no semantic judgment calls. One caveat carried over honestly:
+spec-mode flows currently abort at the first step whose action genuinely
+can't be performed (a missing element) rather than continuing past it — a
+real coverage limitation, detailed in
+[`agent/flow_runner/README.md`](agent/flow_runner/README.md) along with
+the pinned regression tests that protect its expectation checker.
+
 ## Measured results
 
 | Metric | Result | How it's computed |

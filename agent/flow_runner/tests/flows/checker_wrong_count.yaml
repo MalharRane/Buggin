@@ -1,0 +1,7 @@
+flow: "Expectation checker test - wrong count, no other signal"
+steps:
+  - action: "go to the product listing page"
+  - action: "open the product named 'Classic Tee'"
+  - action: "click add to cart"
+  - action: "go to the cart"
+    expect: "the cart shows 2 items"

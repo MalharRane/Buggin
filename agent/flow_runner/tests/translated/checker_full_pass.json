@@ -1,0 +1,152 @@
+{
+  "flow_name": "Checkout with a valid order",
+  "steps": [
+    {
+      "step_index": 0,
+      "original_action": "go to the product listing page",
+      "original_expect": "",
+      "operations": [
+        {
+          "op": "navigate",
+          "target_page": "listing",
+          "locator_by": "",
+          "locator_value": "",
+          "locator_role": "",
+          "field_label": "",
+          "value": ""
+        }
+      ],
+      "expect_type": "none",
+      "expect_detail": "",
+      "needs_clarification": false,
+      "clarification_reason": ""
+    },
+    {
+      "step_index": 1,
+      "original_action": "open the product named 'Classic Tee'",
+      "original_expect": "",
+      "operations": [
+        {
+          "op": "click",
+          "target_page": "",
+          "locator_by": "text",
+          "locator_value": "Classic Tee",
+          "locator_role": "link",
+          "field_label": "",
+          "value": ""
+        }
+      ],
+      "expect_type": "none",
+      "expect_detail": "",
+      "needs_clarification": false,
+      "clarification_reason": ""
+    },
+    {
+      "step_index": 2,
+      "original_action": "click add to cart",
+      "original_expect": "a confirmation message appears",
+      "operations": [
+        {
+          "op": "click",
+          "target_page": "",
+          "locator_by": "text",
+          "locator_value": "Add to Cart",
+          "locator_role": "button",
+          "field_label": "",
+          "value": ""
+        }
+      ],
+      "expect_type": "text_appears",
+      "expect_detail": "confirmation message",
+      "needs_clarification": false,
+      "clarification_reason": ""
+    },
+    {
+      "step_index": 3,
+      "original_action": "go to the cart",
+      "original_expect": "the cart shows 1 item",
+      "operations": [
+        {
+          "op": "click",
+          "target_page": "",
+          "locator_by": "text",
+          "locator_value": "Cart",
+          "locator_role": "link",
+          "field_label": "",
+          "value": ""
+        }
+      ],
+      "expect_type": "text_appears",
+      "expect_detail": "1 item",
+      "needs_clarification": false,
+      "clarification_reason": ""
+    },
+    {
+      "step_index": 4,
+      "original_action": "proceed to checkout",
+      "original_expect": "",
+      "operations": [
+        {
+          "op": "click",
+          "target_page": "",
+          "locator_by": "text",
+          "locator_value": "Proceed to Checkout",
+          "locator_role": "button",
+          "field_label": "",
+          "value": ""
+        }
+      ],
+      "expect_type": "none",
+      "expect_detail": "",
+      "needs_clarification": false,
+      "clarification_reason": ""
+    },
+    {
+      "step_index": 5,
+      "original_action": "fill name, email, address, then place the order",
+      "original_expect": "an order success confirmation is shown",
+      "operations": [
+        {
+          "op": "fill",
+          "target_page": "",
+          "locator_by": "",
+          "locator_value": "",
+          "locator_role": "",
+          "field_label": "name",
+          "value": "John Doe"
+        },
+        {
+          "op": "fill",
+          "target_page": "",
+          "locator_by": "",
+          "locator_value": "",
+          "locator_role": "",
+          "field_label": "email",
+          "value": "test.user@example.com"
+        },
+        {
+          "op": "fill",
+          "target_page": "",
+          "locator_by": "",
+          "locator_value": "",
+          "locator_role": "",
+          "field_label": "address",
+          "value": "123 Test St, Testville"
+        },
+        {
+          "op": "click",
+          "target_page": "",
+          "locator_by": "text",
+          "locator_value": "Place Order",
+          "locator_role": "button",
+          "field_label": "",
+          "value": ""
+        }
+      ],
+      "expect_type": "text_appears",
+      "expect_detail": "order success confirmation",
+      "needs_clarification": false,
+      "clarification_reason": ""
+    }
+  ]
+}

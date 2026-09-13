@@ -1,0 +1,10 @@
+flow: "Expectation checker stress test - spurious quantity match"
+steps:
+  - action: "go to the product listing page"
+  - action: "open the product named 'Classic Tee'"
+  - action: "click add to cart"
+  - action: "go to the product listing page"
+  - action: "open the product named 'Trail Sneakers'"
+  - action: "click add to cart"
+  - action: "go to the cart"
+    expect: "the cart shows 1 item"
